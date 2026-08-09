@@ -1,8 +1,5 @@
 import streamlit as st
-from g4f.client import Client
-
-# Initialize G4F Client (Gratis, Tanpa Token/API Key)
-client = Client()
+import g4f
 
 # ---------------------------------------------------------
 # TAMPILAN & CSS ANIMATED CYBERPUNK
@@ -77,12 +74,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="animated-title">⚡ EXELYN AGENT ⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: FREE INFERENCE ENGINE</div>', unsafe_allow_html=True)
+st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: STABLE FREE ENGINE</div>', unsafe_allow_html=True)
 
-SYSTEM_PROMPT = """
-You are EXELYN AGENT, an elite hacker-style AI coding assistant.
-Your responses must be precise, highly technical, clean, and optimized.
-"""
+SYSTEM_PROMPT = "You are EXELYN AGENT, an elite hacker-style AI coding assistant."
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -98,26 +92,31 @@ if prompt := st.chat_input("Enter code or command..."):
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        full_response = ""
         
         try:
-            messages_payload = [{"role": "system", "content": SYSTEM_PROMPT}] + [
+            # Gunakan Provider DDG (DuckDuckGo AI) / Blackbox yang tidak perlu cookie/auth
+            formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + [
                 {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
             ]
 
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages_payload,
-                stream=True
+            response = g4f.ChatCompletion.create(
+                model=g4f.models.gpt_4o,
+                provider=g4f.Provider.DDG,
+                messages=formatted_messages
             )
-
-            for chunk in response:
-                if chunk.choices[0].delta.content is not None:
-                    full_response += chunk.choices[0].delta.content
-                    message_placeholder.markdown(full_response + "▌")
             
-            message_placeholder.markdown(full_response)
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            message_placeholder.markdown(response)
+            st.session_state.messages.append({"role": "assistant", "content": response})
 
         except Exception as e:
-            st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(e)}")
+            # Fallback otomatis jika provider utama sibuk
+            try:
+                response = g4f.ChatCompletion.create(
+                    model="gpt-4o",
+                    provider=g4f.Provider.Blackbox,
+                    messages=formatted_messages
+                )
+                message_placeholder.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            except Exception as ex:
+                st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(ex)}")
