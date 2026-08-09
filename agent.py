@@ -4,7 +4,7 @@ from openai import OpenAI
 # ---------------------------------------------------------
 # KONFIGURASI UTAMA
 # ---------------------------------------------------------
-API_KEY = "PASTE_API_KEY_KAMU_DI_SINI"  # Ganti dengan API Key milikmu
+API_KEY = "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"
 BASE_URL = "https://router.requesty.ai/v1"  # Sesuaikan jika menggunakan OpenRouter
 MODEL_NAME = "deepseek/deepseek-coder"
 
