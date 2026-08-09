@@ -7,7 +7,7 @@ from openai import OpenAI
 # Mengambil API Key dari Secrets Manager Streamlit secara aman
 API_KEY = st.secrets.get("GITHUB_TOKEN", "fake-key")
 BASE_URL = "https://models.inference.ai.azure.com"
-MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = "openai/gpt-4o-mini"
 
 client = OpenAI(
     api_key=API_KEY,
