@@ -5,8 +5,8 @@ from openai import OpenAI
 # KONFIGURASI UTAMA
 # ---------------------------------------------------------
 API_KEY = "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"
-BASE_URL = "https://router.requesty.ai/v1"  # Sesuaikan jika menggunakan OpenRouter
-MODEL_NAME = "deepseek/deepseek-coder"
+BASE_URL = "https://openrouter.ai/api/v1"
+MODEL_NAME = "deepseek/deepseek-chat"  # Atau model lain yang kamu pakai
 
 # ---------------------------------------------------------
 # TAMPILAN & TEMA (HACKER RED & BLACK AESTHETIC)
