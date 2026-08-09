@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import urllib.parse
 
 # ---------------------------------------------------------
 # TAMPILAN & CSS ANIMATED CYBERPUNK
@@ -95,11 +94,23 @@ if prompt := st.chat_input("Enter code or command..."):
         message_placeholder = st.empty()
         
         try:
-            # Menggunakan API Pollinations AI (Tanpa Kunci/Token & Tanpa Autentikasi)
-            encoded_prompt = urllib.parse.quote(f"{SYSTEM_PROMPT}\nUser: {prompt}")
-            url = f"https://text.pollinations.ai/{encoded_prompt}"
+            formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + [
+                {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
+            ]
+
+            # Menggunakan endpoint JSON POST resmi Pollinations AI
+            payload = {
+                "messages": formatted_messages,
+                "model": "openai",
+                "seed": 42
+            }
             
-            res = requests.get(url, timeout=30)
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)"
+            }
+
+            res = requests.post("https://text.pollinations.ai/", json=payload, headers=headers, timeout=30)
             
             if res.status_code == 200:
                 answer = res.text
