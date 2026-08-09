@@ -6,7 +6,7 @@ from openai import OpenAI
 # ---------------------------------------------------------
 API_KEY = "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"
 BASE_URL = "https://openrouter.ai/api/v1"
-MODEL_NAME = "meta-llama/llama-3.1-8b-instruct:free"
+MODEL_NAME = "openrouter/auto"
 
 # ---------------------------------------------------------
 # TAMPILAN & TEMA (HACKER RED & BLACK AESTHETIC)
