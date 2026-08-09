@@ -2,79 +2,109 @@ import streamlit as st
 from openai import OpenAI
 
 # ---------------------------------------------------------
-# KONFIGURASI UTAMA
+# KONFIGURASI AI (BEBAS ERROR DENGAN STREAMLIT SECRETS)
 # ---------------------------------------------------------
-API_KEY = "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"
-BASE_URL = "https://openrouter.ai/api/v1"
-MODEL_NAME = "openrouter/auto"
+# Mengambil API Key dari Secrets Manager Streamlit secara aman
+API_KEY = st.secrets.get("GITHUB_TOKEN", "fake-key")
+BASE_URL = "https://models.inference.ai.azure.com"
+MODEL_NAME = "gpt-4o-mini"
+
+client = OpenAI(
+    api_key=API_KEY,
+    base_url=BASE_URL
+)
 
 # ---------------------------------------------------------
-# TAMPILAN & TEMA (HACKER RED & BLACK AESTHETIC)
+# TAMPILAN & CSS ANIMATED CYBERPUNK
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="EXELYN AGENT",
-    page_icon="🤖",
+    page_icon="⚡",
     layout="wide"
 )
 
 st.markdown("""
     <style>
     .stApp {
-        background-color: #0d0000;
+        background-color: #080000;
         color: #ff3333;
         font-family: 'Courier New', Courier, monospace;
     }
-    h1 {
+
+    @keyframes redGlow {
+        0% { text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; transform: scale(1); }
+        50% { text-shadow: 0 0 20px #ff0000, 0 0 35px #ff0000; transform: scale(1.02); }
+        100% { text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; transform: scale(1); }
+    }
+
+    .animated-title {
         color: #ff0000 !important;
-        text-shadow: 0 0 10px #ff0000;
         font-family: 'Courier New', Courier, monospace;
         text-align: center;
-        border-bottom: 2px solid #ff0000;
-        padding-bottom: 10px;
+        font-size: 2.8rem;
+        font-weight: bold;
+        letter-spacing: 3px;
+        animation: redGlow 2.5s infinite ease-in-out;
+        margin-bottom: 5px;
     }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    [data-testid="stChatMessage"] {
+        background-color: #120000;
+        border: 1px solid #550000;
+        border-radius: 8px;
+        color: #ff6666;
+        animation: fadeInUp 0.4s ease-out forwards;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.15);
+    }
+
     .stChatInputContainer textarea {
         background-color: #1a0000 !important;
         color: #ff3333 !important;
-        border: 1px solid #ff0000 !important;
+        border: 1px solid #660000 !important;
         font-family: 'Courier New', Courier, monospace !important;
     }
-    [data-testid="stChatMessage"] {
-        background-color: #150000;
-        border: 1px solid #400000;
-        border-radius: 5px;
-        color: #ff6666;
-    }
+
     code {
         color: #00ff66 !important;
-        background-color: #050505 !important;
+        background-color: #030303 !important;
+        border: 1px solid #004411;
+    }
+
+    .status-bar {
+        text-align: center;
+        color: #880000;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #440000;
+        padding-bottom: 12px;
+        margin-bottom: 25px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("⚡ EXELYN AGENT ⚡")
-st.caption("SYSTEM STATUS: ONLINE | PROTOCOL: CODING ASSISTANT")
+st.markdown('<div class="animated-title">⚡ EXELYN AGENT ⚡</div>', unsafe_allow_html=True)
+st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: GITHUB INFERENCE ENGINE</div>', unsafe_allow_html=True)
 
 SYSTEM_PROMPT = """
 You are EXELYN AGENT, an elite hacker-style AI coding assistant.
 Your responses must be precise, highly technical, clean, and optimized.
-Always write clean, secure code and explain complex logic efficiently.
 """
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Tampilkan riwayat chat
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Input dari pengguna
 if prompt := st.chat_input("Enter code or command..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-
-    client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
@@ -101,6 +131,3 @@ if prompt := st.chat_input("Enter code or command..."):
 
         except Exception as e:
             st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(e)}")
-
-            
- 
