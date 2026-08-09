@@ -74,7 +74,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="animated-title">⚡ EXELYN AGENT ⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: STABLE FREE ENGINE</div>', unsafe_allow_html=True)
+st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: FREE INFERENCE ENGINE</div>', unsafe_allow_html=True)
 
 SYSTEM_PROMPT = "You are EXELYN AGENT, an elite hacker-style AI coding assistant."
 
@@ -94,29 +94,18 @@ if prompt := st.chat_input("Enter code or command..."):
         message_placeholder = st.empty()
         
         try:
-            # Gunakan Provider DDG (DuckDuckGo AI) / Blackbox yang tidak perlu cookie/auth
             formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + [
                 {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
             ]
 
+            # Menggunakan model 'gpt-3.5-turbo' yang merupakan pilihan paling stabil tanpa error provider
             response = g4f.ChatCompletion.create(
-                model=g4f.models.gpt_4o,
-                provider=g4f.Provider.DDG,
+                model="gpt-3.5-turbo",
                 messages=formatted_messages
             )
             
             message_placeholder.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            st.session_state.messages.append({"role": "assistant", "content": str(response)})
 
         except Exception as e:
-            # Fallback otomatis jika provider utama sibuk
-            try:
-                response = g4f.ChatCompletion.create(
-                    model="gpt-4o",
-                    provider=g4f.Provider.Blackbox,
-                    messages=formatted_messages
-                )
-                message_placeholder.markdown(response)
-                st.session_state.messages.append({"role": "assistant", "content": response})
-            except Exception as ex:
-                st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(ex)}")
+            st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(e)}")
