@@ -1,8 +1,6 @@
 import streamlit as st
 import requests
-
-# Endpoint API Publik Gratis (Llama-3.1-8B)
-API_URL = "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.1-8B-Instruct/v1/chat/completions"
+import urllib.parse
 
 # ---------------------------------------------------------
 # TAMPILAN & CSS ANIMATED CYBERPUNK
@@ -77,7 +75,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="animated-title">⚡ EXELYN AGENT ⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: PUBLIC INFERENCE ENGINE</div>', unsafe_allow_html=True)
+st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: UNRESTRICTED AI ENGINE</div>', unsafe_allow_html=True)
 
 SYSTEM_PROMPT = "You are EXELYN AGENT, an elite hacker-style AI coding assistant."
 
@@ -97,24 +95,18 @@ if prompt := st.chat_input("Enter code or command..."):
         message_placeholder = st.empty()
         
         try:
-            formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + [
-                {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
-            ]
-
-            payload = {
-                "model": "meta-llama/Llama-3.1-8B-Instruct",
-                "messages": formatted_messages,
-                "max_tokens": 500
-            }
-
-            res = requests.post(API_URL, json=payload, timeout=20)
+            # Menggunakan API Pollinations AI (Tanpa Kunci/Token & Tanpa Autentikasi)
+            encoded_prompt = urllib.parse.quote(f"{SYSTEM_PROMPT}\nUser: {prompt}")
+            url = f"https://text.pollinations.ai/{encoded_prompt}"
+            
+            res = requests.get(url, timeout=30)
             
             if res.status_code == 200:
-                answer = res.json()["choices"][0]["message"]["content"]
+                answer = res.text
                 message_placeholder.markdown(answer)
                 st.session_state.messages.append({"role": "assistant", "content": answer})
             else:
-                st.error(f"SYSTEM ACCESS DENIED / HTTP {res.status_code}: {res.text}")
+                st.error(f"SYSTEM ACCESS DENIED / HTTP {res.status_code}")
 
         except Exception as e:
             st.error(f"SYSTEM ERROR: {str(e)}")
