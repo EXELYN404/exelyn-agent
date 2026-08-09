@@ -1,16 +1,12 @@
 import streamlit as st
-from openai import OpenAI
+from g4f.client import Client
 
-# Mengambil Token dari Streamlit Secrets
-API_KEY = st.secrets.get("GITHUB_TOKEN", "")
-BASE_URL = "https://models.inference.ai.azure.com"
-MODEL_NAME = "gpt-4o-mini"
+# Initialize G4F Client (Gratis, Tanpa Token/API Key)
+client = Client()
 
-client = OpenAI(
-    api_key=API_KEY,
-    base_url=BASE_URL
-)
-
+# ---------------------------------------------------------
+# TAMPILAN & CSS ANIMATED CYBERPUNK
+# ---------------------------------------------------------
 st.set_page_config(
     page_title="EXELYN AGENT",
     page_icon="⚡",
@@ -81,7 +77,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="animated-title">⚡ EXELYN AGENT ⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: GITHUB INFERENCE ENGINE</div>', unsafe_allow_html=True)
+st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: FREE INFERENCE ENGINE</div>', unsafe_allow_html=True)
 
 SYSTEM_PROMPT = """
 You are EXELYN AGENT, an elite hacker-style AI coding assistant.
@@ -110,7 +106,7 @@ if prompt := st.chat_input("Enter code or command..."):
             ]
 
             response = client.chat.completions.create(
-                model=MODEL_NAME,
+                model="gpt-4o",
                 messages=messages_payload,
                 stream=True
             )
