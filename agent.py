@@ -1,5 +1,8 @@
 import streamlit as st
-import g4f
+import requests
+
+# Endpoint API Publik Gratis (Llama-3.1-8B)
+API_URL = "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.1-8B-Instruct/v1/chat/completions"
 
 # ---------------------------------------------------------
 # TAMPILAN & CSS ANIMATED CYBERPUNK
@@ -74,7 +77,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="animated-title">⚡ EXELYN AGENT ⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: FREE INFERENCE ENGINE</div>', unsafe_allow_html=True)
+st.markdown('<div class="status-bar">SYSTEM STATUS: ONLINE | PROTOCOL: PUBLIC INFERENCE ENGINE</div>', unsafe_allow_html=True)
 
 SYSTEM_PROMPT = "You are EXELYN AGENT, an elite hacker-style AI coding assistant."
 
@@ -98,14 +101,20 @@ if prompt := st.chat_input("Enter code or command..."):
                 {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
             ]
 
-            # Menggunakan model 'gpt-3.5-turbo' yang merupakan pilihan paling stabil tanpa error provider
-            response = g4f.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=formatted_messages
-            )
+            payload = {
+                "model": "meta-llama/Llama-3.1-8B-Instruct",
+                "messages": formatted_messages,
+                "max_tokens": 500
+            }
+
+            res = requests.post(API_URL, json=payload, timeout=20)
             
-            message_placeholder.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": str(response)})
+            if res.status_code == 200:
+                answer = res.json()["choices"][0]["message"]["content"]
+                message_placeholder.markdown(answer)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
+            else:
+                st.error(f"SYSTEM ACCESS DENIED / HTTP {res.status_code}: {res.text}")
 
         except Exception as e:
-            st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(e)}")
+            st.error(f"SYSTEM ERROR: {str(e)}")
