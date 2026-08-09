@@ -1,22 +1,16 @@
 import streamlit as st
 from openai import OpenAI
 
-# ---------------------------------------------------------
-# KONFIGURASI AI (BEBAS ERROR DENGAN STREAMLIT SECRETS)
-# ---------------------------------------------------------
-# Mengambil API Key dari Secrets Manager Streamlit secara aman
-API_KEY = st.secrets.get("GITHUB_TOKEN", "fake-key")
+# Mengambil Token dari Streamlit Secrets
+API_KEY = st.secrets.get("GITHUB_TOKEN", "")
 BASE_URL = "https://models.inference.ai.azure.com"
-MODEL_NAME = "openai/gpt-4o-mini"
+MODEL_NAME = "gpt-4o-mini"
 
 client = OpenAI(
     api_key=API_KEY,
     base_url=BASE_URL
 )
 
-# ---------------------------------------------------------
-# TAMPILAN & CSS ANIMATED CYBERPUNK
-# ---------------------------------------------------------
 st.set_page_config(
     page_title="EXELYN AGENT",
     page_icon="⚡",
