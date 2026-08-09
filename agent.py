@@ -1,84 +1,106 @@
-import sys
+import streamlit as st
 from openai import OpenAI
 
 # ---------------------------------------------------------
-# 1. ISI KONFIGURASI KAMU DI SINI (AGAR TIDAK PERLU PASTE)
+# KONFIGURASI UTAMA
 # ---------------------------------------------------------
-API_KEY = "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"  # Ganti dengan API Key kamu
-BASE_URL = "https://router.requesty.ai/v1"  # Sesuaikan URL provider kamu
-MODEL_NAME = "deepseek/deepseek-coder"      # Sesuaikan nama model
+API_KEY = "PASTE_API_KEY_KAMU_DI_SINI"  # Ganti dengan API Key milikmu
+BASE_URL = "https://router.requesty.ai/v1"  # Sesuaikan jika menggunakan OpenRouter
+MODEL_NAME = "deepseek/deepseek-coder"
 
 # ---------------------------------------------------------
-# WARNA TERMINAL (ANSI ESCAPE CODES) - RED & BLACK HACKER
+# TAMPILAN & TEMA (HACKER RED & BLACK AESTHETIC)
 # ---------------------------------------------------------
-RED = "\033[38;2;255;0;0m"
-DARK_RED = "\033[38;2;139;0;0m"
-GREEN_CODE = "\033[38;2;0;255;102m"
-RESET = "\033[0m"
-BOLD = "\033[1m"
+st.set_page_config(
+    page_title="EXELYN AGENT",
+    page_icon="🤖",
+    layout="wide"
+)
 
-def print_banner():
-    print(f"{RED}{BOLD}")
-    print("=" * 50)
-    print("      ⚡ EXELYN AGENT - CODING ASSISTANT ⚡      ")
-    print("       SYSTEM STATUS: ONLINE | PROTOCOL: CLI     ")
-    print("=" * 50)
-    print(f"{RESET}")
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #0d0000;
+        color: #ff3333;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    h1 {
+        color: #ff0000 !important;
+        text-shadow: 0 0 10px #ff0000;
+        font-family: 'Courier New', Courier, monospace;
+        text-align: center;
+        border-bottom: 2px solid #ff0000;
+        padding-bottom: 10px;
+    }
+    .stChatInputContainer textarea {
+        background-color: #1a0000 !important;
+        color: #ff3333 !important;
+        border: 1px solid #ff0000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+    [data-testid="stChatMessage"] {
+        background-color: #150000;
+        border: 1px solid #400000;
+        border-radius: 5px;
+        color: #ff6666;
+    }
+    code {
+        color: #00ff66 !important;
+        background-color: #050505 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-def main():
-    print_banner()
+st.title("⚡ EXELYN AGENT ⚡")
+st.caption("SYSTEM STATUS: ONLINE | PROTOCOL: CODING ASSISTANT")
 
-    if API_KEY == "PASTE_API_KEY_KAMU_DI_SINI" or not API_KEY:
-        print(f"{DARK_RED}[!] ERROR: Masukkan API Key kamu di dalam file app.py terlebih dahulu!{RESET}")
-        sys.exit()
+SYSTEM_PROMPT = """
+You are EXELYN AGENT, an elite hacker-style AI coding assistant.
+Your responses must be precise, highly technical, clean, and optimized.
+Always write clean, secure code and explain complex logic efficiently.
+"""
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Tampilkan riwayat chat
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Input dari pengguna
+if prompt := st.chat_input("Enter code or command..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    system_prompt = """
-    You are EXELYN AGENT, an elite hacker-style AI coding assistant.
-    Your responses must be precise, highly technical, clean, and optimized.
-    Always write clean, secure code and explain complex logic efficiently.
-    """
-
-    messages = [{"role": "system", "content": system_prompt}]
-
-    print(f"{RED}[SYSTEM INITIALIZED] Type 'exit' or 'quit' to close.{RESET}\n")
-
-    while True:
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        
         try:
-            user_input = input(f"{DARK_RED}EXELYN-USER>{RESET} ")
-            if user_input.lower() in ["exit", "quit"]:
-                print(f"{RED}[+] Terminating session...{RESET}")
-                break
-            if not user_input.strip():
-                continue
+            messages_payload = [{"role": "system", "content": SYSTEM_PROMPT}] + [
+                {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
+            ]
 
-            messages.append({"role": "user", "content": user_input})
-
-            print(f"\n{RED}EXELYN-AGENT>{RESET} ", end="")
-            
             response = client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=messages,
+                messages=messages_payload,
                 stream=True
             )
 
-            full_response = ""
             for chunk in response:
-                if chunk.choices[0].delta.content:
-                    text = chunk.choices[0].delta.content
-                    full_response += text
-                    sys.stdout.write(f"{GREEN_CODE}{text}{RESET}")
-                    sys.stdout.flush()
+                if chunk.choices[0].delta.content is not None:
+                    full_response += chunk.choices[0].delta.content
+                    message_placeholder.markdown(full_response + "▌")
+            
+            message_placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-            print("\n")
-            messages.append({"role": "assistant", "content": full_response})
-
-        except KeyboardInterrupt:
-            print(f"\n{RED}[!] Interrupted by user. Exiting...{RESET}")
-            break
         except Exception as e:
-            print(f"\n{DARK_RED}[ERROR] {str(e)}{RESET}\n")
+            st.error(f"SYSTEM ACCESS DENIED / ERROR: {str(e)}")
 
-if __name__ == "__main__":
-    main()
+            
+ 
